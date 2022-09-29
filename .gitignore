@@ -132,3 +132,6 @@ dmypy.json
 *.json
 *.sql
 *.sqlite
+
+# Ignore VSCode extensions
+.vscode/
