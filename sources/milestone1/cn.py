@@ -6,20 +6,19 @@ import math
 
 
 
-def compute():
+def compute(start, dt, steps):
     # Create default values
-    dt = 1.0
-    x, y = 8000000.0, 0
-    vx, vy = 0.0, 8000.0
+    x, y = start[0], start[1]
+    vx, vy = start[2], start[3]
 
     # Gravitational parameter
-    nu = (6.67 * (10.0 ** -11.0)) * (5.0 * (10.0 ** 24.0))
+    nu = 1.0
 
     #List to collect the data
     points = [[x, y]]
 
     #Start looping
-    for i in range(0, 25000):
+    for i in range(0, steps):
         # Calculate force in step n.
         dvxa, dvya = force(nu, x, y)
 
@@ -52,4 +51,4 @@ def force(nu, x, y):
 
 
 if __name__ == "__main__":
-    compute()
+    compute([1.0, 0.0, 0.0, 1.0], 0.0001, 100000)

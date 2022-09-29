@@ -6,20 +6,19 @@ import math
 
 
 
-def compute():
+def compute(start, dt, steps):
     # Create default values
-    dt = 1.0
-    x, y = 8000000.0, 0
-    vx, vy = 0.0, 7072.0
+    x, y = start[0], start[1]
+    vx, vy = start[2], start[3]
 
     # Gravitational parameter
-    nu = (6.67 * (10.0 ** -11.0)) * (5.0 * (10.0 ** 24.0))
+    nu = 1.0
 
     #List to collect the data
     points = [[x, y]]
 
     #Start looping
-    for i in range(0, 10000):
+    for i in range(0, steps):
         #RK4 step.
         dvx, dvy = step(nu, x, y, vx, vy, dt)
 
@@ -59,31 +58,6 @@ def step(nu, x, y, vx, vy, dt):
     return (a1x + a4x + 2.0 * (a2x + a3x)) * dt / 6.0, (a1y + a4y + 2.0 * (a2y + a3y)) * dt / 6.0
 
 
-def step_(nu, x, y, vx, vy, dt):
-    # Get K1 coefficient.
-    k1x, k1y = force(nu, x, y)
-    k1x = vx + (k1x * dt)
-    k1y = vy + (k1y * dt)
-
-    # Update X, Y, VX, VY and get K2 coefficient.
-    k2x, k2y = force(nu, x + (k1x * dt / 2.0), y + (k1y * dt / 2.0))
-    k2x = vx + (k2x * dt / 2.0)
-    k2y = vy + (k2y * dt / 2.0)
-
-    # Update X, Y, VX, VY and get K3 coefficient.
-    k3x, k3y = force(nu, x + (k2x * dt / 2.0), y + (k2y * dt / 2.0))
-    k3x = vx + (k3x * dt / 2.0)
-    k3y = vy + (k3y * dt / 2.0)
-
-    # Update X, Y, VX, VY and get K4 coefficient.
-    k4x, k4y = force(nu, x + (k3x * dt), y + (k3y * dt))
-    k4x = vx + (k4x * dt)
-    k4y = vy + (k4y * dt)
-
-    return x + ((k1x + k4x + (2.0 * (k2x + k3x))) * dt / 6.0), y + ((k1y + k4y + (2.0 * (k2y + k3y))) * dt / 6.0)
-
-
-
 def force(nu, x, y):
     distance = math.sqrt((x ** 2) + (y ** 2)) ** 3.0
     factor = nu / distance
@@ -91,4 +65,4 @@ def force(nu, x, y):
 
 
 if __name__ == "__main__":
-    compute()
+    compute([1.0, 0.0, 0.0, 1.0], 0.001, 10000)
