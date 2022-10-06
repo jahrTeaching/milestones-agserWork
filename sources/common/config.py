@@ -1,6 +1,7 @@
 # Common configuration class.
 
 
+
 from functools import reduce
 
 
