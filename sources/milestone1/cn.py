@@ -1,48 +1,45 @@
 # Orbit computation using Crank-Nicholson integration.
 
 import matplotlib.pyplot as plt
-import numpy as np
+from numpy import array, zeros
+from scipy.optimize import fsolve
 import math
 
 
 
 def compute(start, dt, steps):
     # Create default values
-    x, y = start[0], start[1]
-    vx, vy = start[2], start[3]
+    U = zeros((4, steps))
+    U[:,0] = array(start)
+    F = zeros(4)
 
     # Gravitational parameter
-    nu = 1.0
+    nu = 3.986e14
 
-    #List to collect the data
-    points = [[x, y]]
+    # Start looping.
+    for i in range(1, steps):
+        x, y = U[2, i-1], U[3, i-1]
+        base = ((U[0, i-1]**2.0) + (U[1, i-1]**2.0)) ** 1.5
+        vx = -U[0, i-1] / base
+        vy = -U[1, i-1] / base
 
-    #Start looping
-    for i in range(0, steps):
-        # Calculate force in step n.
-        dvxa, dvya = force(nu, x, y)
+        F = array([x, y, vx, vy])
 
-        #Calculate the new position
-        x += vx * dt
-        y += vy * dt
-
-        # Calculate force in step n+1.
-        dvxb, dvyb = force(nu, x, y)
-        vx += (dvxa + dvxb) * dt / 2.0
-        vy += (dvya + dvyb) * dt / 2.0
-
-        #Store the points
-        points.append([x, y])
+        def cn(x):
+            base = ((x[0] ** 2.0) + (x[1] ** 2.0)) ** 1.5
+            return [x[0] - U[0, i-1] - (x[2] + F[0]) * dt / 2,
+                    x[1] - U[1, i-1] - (x[3] + F[1]) * dt / 2,
+                    x[2] - U[2, i-1] - (-x[0] / base + F[2]) * dt / 2.0,
+                    x[3] - U[3, i-1] - (-x[0] / base + F[3]) * dt / 2.0]
+        U[:,i] = fsolve(cn, U[:,i-1])
 
     # Display the points
     fig, ax = plt.subplots()
-    ax.plot([p[0] for p in points], [p[1] for p in points])
+    ax.plot(U[0,:], U[1,:])
 
     ax.set(title='Crank-Nicholson orbit')
 
     plt.show()
-
-
 
 def force(nu, x, y):
     distance = math.sqrt((x ** 2) + (y ** 2)) ** 3.0

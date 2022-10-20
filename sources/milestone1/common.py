@@ -77,4 +77,4 @@ class Config:
                 print("Not a number")
                 continue
 
-            self.start[i-1] = float(substring)
+            self.start[select-1] = float(substring)

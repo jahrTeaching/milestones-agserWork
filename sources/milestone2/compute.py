@@ -2,7 +2,8 @@
 
 
 
-from numpy import array, zeros
+from numpy import array, zeros, dot, size
+from numpy.linalg import norm, inv
 from scipy.optimize import fsolve
 
 
@@ -32,6 +33,46 @@ def cn(U, dt, F, t):
     fn = lambda x : x - U - (F(x, t) + F(U, t)) * dt / 2.0
 
     return fsolve(fn, U)
+
+# Jacobiano de matriz.
+def jacobiano(F, x):
+    N = size(x)
+    J = zeros([ N, N ])
+
+    for j in range( N ):
+        dx = zeros( N )
+        dx[j] = 1e-3
+
+        J[:,j] = ( F(x + dx) - F(x - dx) ) / norm( 2 * 1e-3)
+
+    return J
+
+# Newton method.
+def newton(F, x, tol=1e-5, steps=1000):
+    N = size(x)
+    U = zeros(N)
+    U1 = x
+
+    eps = 1
+    it = 0
+
+    U = x
+    
+    while (eps > tol) and (it < steps):
+        U = U1 - dot( inv( jacobiano(F, U1) ), F(U1) )
+        eps = norm(U - U1)
+        U1 = U
+        it += 1
+
+        #D = dot( inv( jacobiano(F, U) ), F(U) )
+        #U = U - D
+        #eps = norm(D)
+
+        #if eps < tol:
+        #    return U
+
+    #print(f"Failed to reach tolerance of {tol} (real = {eps}) with {steps} steps. Value: {U}")
+    return x
 
 # General Cauchy problem method.
 def cauchy(F, t, U0, scheme):

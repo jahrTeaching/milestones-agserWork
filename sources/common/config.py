@@ -9,6 +9,12 @@ from functools import reduce
 class ConfigItem:
     """Configuration item"""
 
+    def __init__(self, ty) -> None:
+        self.val = ty()
+
+    def value(self):
+        return self.val
+
     def tagint(self, name: str, ind, msg: str, ty):
         self.name = name
         self.ind = ind
@@ -49,7 +55,7 @@ class ConfigItem:
         string = input(msg)
 
         try:
-            self.value = float(string)
+            self.val = float(string)
         except Exception as e:
             print(f"[ERROR] Could not parse string '{string}' as float: [Error] {e}")
 
@@ -60,7 +66,7 @@ class ConfigItem:
 
         if string.isnumeric():
             try:
-                self.value = int(string)
+                self.val = int(string)
             except Exception as e:
                 print(f"[ERROR] Could not parse string '{string}' as integer: [Error] {e}")
         else:
@@ -75,10 +81,10 @@ class Config:
         self.items = []
 
     def getitem(self, name):
-        return filter(lambda item: item.named(name), self.items)
+        return list( filter(lambda item: item.named(name), self.items) )[0]
 
     def additem(self, name, ind, msg, ty):
-        item = ConfigItem()
+        item = ConfigItem(ty)
 
         if type(ind) == str:
             item.tagstr(name, ind, msg, ty)

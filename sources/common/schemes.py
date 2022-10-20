@@ -2,9 +2,10 @@
 
 
 
+from .algebra import Newton
+
 from typing import Callable
 from numpy.typing import ArrayLike
-from scipy.optimize import newton
 
 
 
@@ -19,7 +20,7 @@ def EulerInverso(U: ArrayLike, dt: float, t: float, F: Callable) -> ArrayLike:
     # Internal residue function.
     residuo = lambda X : X - U - F(X, t) * dt
 
-    return newton(residuo, U)
+    return Newton(residuo, U)
 
 
 
@@ -28,7 +29,7 @@ def CrankNicolson(U: ArrayLike, dt: float, t: float, F: Callable) -> ArrayLike:
     # Internal residue function.
     residuo = lambda X : X - U - (F(X, t) + F(U, t)) * dt / 2.0
 
-    return newton(residuo, U)
+    return Newton(residuo, U)
 
 # Esquema de Runge-Kutta 4.
 def RungeKutta(U: ArrayLike, dt: float, t: float, F: Callable):
