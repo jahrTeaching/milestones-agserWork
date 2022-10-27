@@ -4,8 +4,9 @@
 
 from .algebra import Newton
 
-from typing import Callable
+from numpy import size
 from numpy.typing import ArrayLike
+from typing import Callable
 
 
 
@@ -43,6 +44,9 @@ def RungeKutta(U: ArrayLike, dt: float, t: float, F: Callable):
 
 # Esquema de Leap-Frog
 def LeapFrog(U: ArrayLike, dt: float, t: float, F: Callable):
+    # Assume first half is X and second half is X'.
+    l = size(U)[0] / 2
+
     # Get base.
     X = U
 
@@ -50,13 +54,13 @@ def LeapFrog(U: ArrayLike, dt: float, t: float, F: Callable):
     A = F(X, t)
 
     # Calculate the new position and halfstep velocity.
-    X[2:] += A[2:] * dt / 2.0
-    X[:2] += X[2:] * dt
+    X[l:] += A[l:] * dt / 2.0
+    X[:l] += X[l:] * dt
 
     # Calculate the acceleration at i+1.
     A = F(X, t)
 
     # Calculate the new velocity.
-    X[2:] += A[2:] * dt / 2.0
+    X[l:] += A[l:] * dt / 2.0
 
     return X

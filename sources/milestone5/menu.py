@@ -2,36 +2,26 @@
 
 
 
-def empty():
-    pass
+from common.config import Config
+from common.menu import Menu
+from common.physics import NBody
+#from . import items
+
+
 
 def menu():
-    # Build the list of methods.
-    methods = [("Empty", empty)]
+    # Build the configuration.
+    config = Config()
 
+    config.additem("num",   1, "Number of bodies",                      int)
+    config.additem("steps", 2, "Number of steps",                       int)
+    config.additem("dt",    3, "Time interval between steps",         float)
 
-    # Build the input message.
-    message = "Select orbit method:\n"
+    # Build the menu.
+    menu = Menu()
 
-    for i in range(0, len(methods)):
-        message += f"  [{i+1}] {methods[i][0]}\n"
+    menu.setconfig(config)
 
-    message += "  [B] Back\n\n>> "
+    menu.additem("nbody", 1, "N-Body problem", NBody)
 
-    while True:
-        s = input(message)
-
-        if s == "b" or s == "B":
-            return
-
-        if not s.isnumeric():
-            print(f"Input not recognized: '{string}'")
-            continue
-
-        select = int(s)
-
-        if select < 1:
-            print(f"Minimum index is 1")
-            continue
-
-        methods[select-1][1]()
+    menu.menu()

@@ -73,10 +73,6 @@ def ErrorRichardson(U0: ArrayLike, t: ArrayLike, F: Callable, scheme: Callable, 
     N = size(t)
     M = size(U0)
 
-    # Build the result arrays.
-    #U1 = zeros( (len(U0), N+1) )
-    #U2 = zeros( (len(U0), N+1) )
-
     # Build the temporal linear spaces.
     t1 = t
     t2 = linspace( 0, t[-1], 2 * N)
@@ -84,12 +80,6 @@ def ErrorRichardson(U0: ArrayLike, t: ArrayLike, F: Callable, scheme: Callable, 
     # Calculate the results vectors.
     U1 = Cauchy(U0, t1, F, scheme)
     UF = Cauchy(U0, t2, F, scheme)
-
-    #for i in range(N, -1):
-    #    U1[:, i] = ( U1[:, i] + (2.0 * U1[:, i-1]) + U1[:, i-2] ) / 4.0
-
-    #for i in range(2*N, -1):
-    #    U2[:, i] = ( U2[:, i] + (2.0 * U2[:, i-1]) + U2[:, i-2] ) / 4.0
 
     # Filter the unwanted U2 values.
     U2 = array( list( map( lambda X: X[1], filter( lambda X: X[0] % 2 == 0, enumerate(UF) ) ) ) )
@@ -117,9 +107,6 @@ def ErrorRichardson(U0: ArrayLike, t: ArrayLike, F: Callable, scheme: Callable, 
 
     V[:,0] = array( list( map( lambda X: X[0] / X[1], zip(ep, dp) ) ) )
     V[:,1] = array( list( map( lambda X: X[0] / X[1], zip(ev, dv) ) ) )
-
-    #V = array( list( map( lambda X: abs( (X[0] / K) / X[1] if (X[0] > 1e-12) and (X[1] > 1e-8) else 0.0), zip( D, U2 ) ) ) )
-    #V = array( list( map( lambda X: abs( (X[0] / K) / X[1] ), zip( D, U2 ) ) ) )
 
     # Calculate the scalar normalized relative error.
     R = array( list( map( lambda X: norm(X), V ) ) )

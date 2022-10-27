@@ -17,6 +17,37 @@ from typing import Callable
 
 
 
+def all(cfg: Config):
+    # Build the temporal linear space.
+    t = linspace(cfg.getitem("start").value(), cfg.getitem("end").value(), cfg.getitem("steps").value())
+
+    # Build the initial conditions.
+    U0 = array([cfg.getitem("X0").value(), cfg.getitem("Y0").value(), cfg.getitem("VX0").value(), cfg.getitem("VY0").value()])
+
+    # Build the order.
+    order = cfg.getitem("order").value()
+
+    # Get the results.
+    results = [(s.__name__, Convergencia(U0, t, Kepler, s, order)) for s in [Euler, EulerInverso, CrankNicolson, RungeKutta]]
+
+    #Get minimum value for plotting.
+    bottom = min( [ min( e ) for (s, (q, e, n)) in results] ) - 1.0
+
+    # Plot all the results.
+    fig, ((eu, ei), (cn, rk)) = plt.subplots(2, 2)
+
+    for ((name, (q, logE, logN)), ax) in zip( results, [eu, ei, cn, rk] ):
+
+        # Display information.
+        ax.set_title(f"Convergence rate of {name} (Q={q}")
+        ax.set_xlabel("log(N)")
+        ax.set_ylabel("log(E)")
+        ax.set_ylim(bottom, 0.0)
+
+        ax.plot( logN, logE )
+
+    plt.show()
+
 def comp(cfg: Config, scheme: Callable, method: Callable):
     # Build the temporal linear space.
     t = linspace(cfg.getitem("start").value(), cfg.getitem("end").value(), cfg.getitem("steps").value())
@@ -97,6 +128,8 @@ def convergencia(cfg: Config):
     menu.additem("crank", 3, "Convergence Rate of Crank-Nicolson", lambda cfg: comp(cfg, CrankNicolson, Convergencia))
     menu.additem("runge", 4, "Convergence Rate of Runge-Kutta 4",  lambda cfg: comp(cfg, RungeKutta,    Convergencia))
     menu.additem("leap",  5, "Convergence Rate of Leap-Frog",      lambda cfg: comp(cfg, LeapFrog,      Convergencia))
+
+    menu.additem("all", "A", "Convergence rate for all schemes",   all)
 
     menu.menu()
 

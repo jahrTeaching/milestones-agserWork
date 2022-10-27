@@ -21,5 +21,7 @@ if __name__ == "__main__":
     menu.additem("milestone1", 1, "M1 - Simple orbit methods",      m1.menu)
     menu.additem("milestone2", 2, "M2 - Composed orbit methods",    m2.menu)
     menu.additem("milestone3", 3, "M3 - Richardson relative error", m3.menu)
+    menu.additem("milestone4", 4, "M4 - Placeholder",               m4.menu)
+    menu.additem("milestone5", 5, "M5 - N-Body problem",            m5.menu)
 
     menu.menu()
