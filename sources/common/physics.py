@@ -48,7 +48,7 @@ def NBody(cfg: Config):
 
     # Create the array and populate the initial step.
     bodies = empty((steps, num, 4))
-    bodies[0] = array( [[random() for _ in range(4)] for _ in range(num)] )
+    bodies[0] = array( [[random() - 0.5 for _ in range(4)] for _ in range(num)] )
 
     # Iterate over time.
     for step in range(1, steps):
@@ -61,8 +61,10 @@ def NBody(cfg: Config):
 
     # Transform the V array into colors.
 
-    # Maximum velocity value.
+    # Maximum velocity, X and Y value.
     Vmax = max( max(V[:]) )
+    Xmax = max( max(X[:]) )
+    Ymax = max( max(Y[:]) )
 
     # Color map.
     C = [ [hue2rgb(Vel / Vmax) for Vel in step] for step in V ]
@@ -70,9 +72,14 @@ def NBody(cfg: Config):
     # Display animated problem.
     fig, ax = plt.subplots(figsize = (8, 8))
 
+    ax.set_xlim(Xmax)
+    ax.set_ylim(Ymax)
+
     def update(frame):
         ax.cla()
         ax.scatter(X[frame], Y[frame], c=C[frame])
+        ax.set_xlim(Xmax)
+        ax.set_ylim(Ymax)
 
     anim = FuncAnimation(fig, update, frames=steps, interval=10, repeat_delay=3000)
 
