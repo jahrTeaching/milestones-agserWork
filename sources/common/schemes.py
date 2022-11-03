@@ -45,7 +45,7 @@ def RungeKutta(U: ArrayLike, dt: float, t: float, F: Callable):
 # Esquema de Leap-Frog
 def LeapFrog(U: ArrayLike, dt: float, t: float, F: Callable):
     # Assume first half is X and second half is X'.
-    l = size(U)[0] / 2
+    l = int( size(U) / 2 )
 
     # Get base.
     X = U

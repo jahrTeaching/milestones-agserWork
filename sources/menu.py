@@ -2,6 +2,7 @@
 
 
 import common
+import tracemalloc
 
 from common.menu import Menu
 

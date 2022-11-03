@@ -28,6 +28,13 @@ def Kepler(U: ArrayLike, t: float):
     return array( [dx, dy, -x/d, -y/d] )
 
 
+
+# Harmonic Oscillator equation.
+def Oscilador(U: ArrayLike, t: float):
+    return array([U[1], -U[0]])
+
+
+
 # Equation step for a Kepler orbit.
 def KeplerForce(U: ArrayLike, t: float):
     x , y  = U[0], U[1]
