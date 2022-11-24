@@ -17,7 +17,7 @@ def Euler(U: ArrayLike, dt: float, t: float, F: Callable) -> ArrayLike:
 
 
 # Esquema de Euler inverso.
-def EulerInverso(U: ArrayLike, dt: float, t: float, F: Callable) -> ArrayLike:
+def EulerInverso(U, dt: float, t: float, F: Callable):
     # Internal residue function.
     residuo = lambda X : X - U - F(X, t) * dt
 
