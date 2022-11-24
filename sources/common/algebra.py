@@ -68,7 +68,13 @@ def Inverse(A):
     return B
 
 def Jacobiano(F, U):
-    # Extract dimensions and initialize J.
+    # Get the size of the array.
+    N = size(U)
+
+    if N == 1:
+        x = 1e-3
+        return (F(U + x) - F(U - x)) / (2 * x)
+
     N = size(U)
     J = zeros([N, N])
 
@@ -82,10 +88,33 @@ def Jacobiano(F, U):
 def Newton(f, U0, tol=1e-8, steps=1000):
     # Extract dimensions and initialize.
     N = size(U0)
+    error = 1
+
+    if N == 1:
+        def prime(F, x):
+            return (F(x + 10e-6) - F(x - 10e-6)) / 20e-6
+
+        U = 0.0
+        U1 = U0
+
+        for step in range(steps):
+            if error <= tol:
+                return U
+
+            U = U1 - f(U1) / prime(f, U1)
+
+            error = abs(U - U1)
+
+
+            U1 = U
+
+        print(f"[WARNING] Newton method reached max steps ({steps})")
+
+        return U
+
     U = zeros(N)
     U1 = U0
 
-    error = 1
 
     for step in range(steps):
         if error <= tol:

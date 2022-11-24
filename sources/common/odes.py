@@ -64,6 +64,8 @@ def Convergencia(U0: ArrayLike, t: ArrayLike, F: Callable, scheme: Callable, sam
     reg = LinearRegression().fit(logN[0:j+1].reshape((-1,1)), logE[0:j+1])
     q = round_(abs(reg.coef_), 1)
 
+    logE[:] = logE[:] - log10(1.0 - (1.0 / (2.0 ** q)))
+
     return q, logE, logN
 
 

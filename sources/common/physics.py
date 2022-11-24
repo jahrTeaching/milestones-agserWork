@@ -9,9 +9,10 @@ from common.schemes import RungeKutta
 from functools import reduce
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
+from matplotlib.collections import PatchCollection
 from multiprocessing import Array, Pool, cpu_count as ncpus
 from multiprocessing.sharedctypes import Array
-from numpy import array, empty, frombuffer, size, reshape
+from numpy import array, empty, frombuffer, size, reshape, zeros
 from numpy.linalg import norm
 from numpy.typing import ArrayLike
 from random import random
@@ -52,10 +53,12 @@ def NBody(cfg: Config):
     steps = cfg.getitem('steps').value()
     num = cfg.getitem('num').value()
     dt = cfg.getitem('dt').value()
+    com = cfg.getitem('com').value()
+    scale = cfg.getitem('scale').value()
 
     # Create the array and populate the initial step.
-    bodies = empty((steps, num, 4))
-    bodies[0] = array( [[(random() - 0.5) for _ in range(4)] for _ in range(num)] )
+    bodies = empty((steps, num, 6))
+    bodies[0] = array( [[(random() - 0.5) * scale for _ in range(6)] for _ in range(num)] )
 
     # Iterate over time.
     for step in range(1, steps):
@@ -64,7 +67,39 @@ def NBody(cfg: Config):
     # Get the X position.
     X = [ [body[0] for body in step] for step in bodies ]
     Y = [ [body[1] for body in step] for step in bodies ]
-    V = [ [norm(body[2:]) for body in step] for step in bodies ]
+    Z = [ [body[2] for body in step] for step in bodies ]
+    V = [ [norm(body[3:]) for body in step] for step in bodies ]
+
+    # Renormalize for centre of mass.
+    if com:
+        for step in range(steps):
+            centre = [0.0, 0.0, 0.0]
+
+            for body in range(num):
+                centre[0] += X[step][body]
+                centre[1] += Y[step][body]
+                centre[2] += Z[step][body]
+
+            centre[0] = centre[0] / num
+            centre[1] = centre[1] / num
+            centre[2] = centre[2] / num
+
+            for body in range(num):
+                X[step][body] = X[step][body] - centre[0]
+                Y[step][body] = Y[step][body] - centre[1]
+                Z[step][body] = Z[step][body] - centre[2]
+
+
+
+    # Get the trajectories.
+    travel = [[] for _ in range(num)]
+
+    for step in bodies:
+        for (j, data) in enumerate( step ):
+            travel[j].append( [data[0], data[1], data[2]] )
+
+    travel = array( travel )
+
 
     # Transform the V array into colors.
 
@@ -72,30 +107,44 @@ def NBody(cfg: Config):
     Vmax = max( max(V[:]) )
     Xabs = [ [abs(x) for x in step] for step in X ]
     Yabs = [ [abs(y) for y in step] for step in Y ]
+    Zabs = [ [abs(z) for z in step] for step in Z ]
 
     Xmax = max( [max(x) for x in Xabs] )
     Ymax = max( [max(y) for y in Yabs] )
+    Zmax = max( [max(z) for z in Zabs] )
     #Ymax = max( max( map(abs, Y[:] ) ) )
 
     # Color map.
-    C = [ [hue2rgb(Vel / Vmax) for Vel in step] for step in V ]
+    #C = [ [hue2rgb(Vel / Vmax) for Vel in step] for step in V ]
 
     # Display animated problem.
-    fig, ax = plt.subplots(figsize = (8, 8))
+    fig = plt.figure()
+    ax  = fig.add_subplot(projection='3d')
 
-    def init():
-        ax.cla()
-        ax.plot([],[])
+    # Initialize the lines.
+    lines = []
+
+    for body in travel[:]:
+        l = ax.plot([], [], [])[0]
+        l.set_data(body[:0, 0], body[:0, 1])
+        l.set_3d_properties([body[:0, 2]])
+        lines.append(l)
 
     def plot(i):
-        ax.cla()
-        ax.scatter(X[i], Y[i], c=C[i])
-        ax.set_xlim(-Xmax, Xmax)
-        ax.set_ylim(-Ymax, Ymax)
+        #ax.cla()
+        for (body, line) in zip( travel, lines ):
+            line.set_data(body[:i,0], body[:i,1])
+            line.set_3d_properties(body[:i,2])
+
+        ax.set_zlim(-Zmax, Zmax)
+        #ax.set_xlim(-Xmax, Xmax)
+        #ax.set_ylim(-Ymax, Ymax)
+        #ax.set_zlim(-Zmax, Zmax)
 
     anim = FuncAnimation(fig=fig, func=plot, frames=steps, interval=10, repeat_delay=3000)
 
     plt.show()
+
 
 
 # Calculates the derivatives in a step of the N-Body problem.
@@ -103,30 +152,33 @@ def NBodyForce(U: ArrayLike, t: ArrayLike):
     # Get the size of the physical world.
     Nb = int( len(U)    )
     Nc = int( len(U[0]) )
+    Nd = int( Nc / 2 )
 
     # Get position and velocity pointers.
     Us = reshape(U, (Nb, Nc))
-    r = reshape(Us[:, :2], (Nb, 2))
-    v = reshape(Us[:, 2:], (Nb, 2))
+    r = reshape(Us[:, :Nd], (Nb, Nd))
+    v = reshape(Us[:, Nd:], (Nb, Nd))
 
     # Get derivative pointers.
-    F = empty(size(U))
+    F = zeros(size(U))
     Fs = reshape(F, (Nb, Nc))
-    dr = reshape(Fs[:, :2], (Nb, 2))
-    dv = reshape(Fs[:, 2:], (Nb, 2))
+    dr = reshape(Fs[:, :Nd], (Nb, Nd))
+    dv = reshape(Fs[:, Nd:], (Nb, Nd))
 
     # Calculate derivatives.
-    dr[:, :] = v[:, :]
+    #dr[:, :] = v[:, :]
+    dv[:, :] = 0
 
     # Start iteration.
     for i in range(Nb):
-        dv[:, :] = 0
+        #dv[:, :] = 0
+        dr[i, :] = v[i, :]
 
         for j in range(Nb):
             if i == j:
                 continue
             
             D = r[j, :] - r[i, :]
-            dv[:, :] = D / norm( D ** 3.0 )
+            dv[i, :] = dv[i, :] + D / norm( D ** 3.0 )
 
     return reshape(F, (Nb, Nc))

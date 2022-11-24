@@ -139,3 +139,4 @@ dmypy.json
 # Do not upload images nor test files.
 doc/img/
 *test.py
+*.tex
