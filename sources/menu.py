@@ -1,6 +1,7 @@
 # Menu selection of milestone
 
 
+
 import common
 import tracemalloc
 
@@ -24,5 +25,6 @@ if __name__ == "__main__":
     menu.additem("milestone3", 3, "M3 - Richardson relative error", m3.menu)
     menu.additem("milestone4", 4, "M4 - Region de Estabilidad",     m4.menu)
     menu.additem("milestone5", 5, "M5 - N-Body problem",            m5.menu)
+    menu.additem("milestone6", 6, "M6 - Lagrange points",           m6.menu)
 
     menu.menu()
