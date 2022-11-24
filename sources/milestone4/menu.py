@@ -9,9 +9,9 @@ from common import schemes
 from common.config import Config
 from common.odes import Cauchy
 from common.physics import Oscilador
-from common.stability import RegionEstabilidad, LeapFrogModified
+from common.stability import RegionEstabilidad
 from matplotlib import pyplot as plt
-from numpy import array, linspace, cos, sin
+from numpy import array, linspace, cos, sin, absolute
 from typing import Callable
 
 
@@ -42,7 +42,7 @@ def regionmenu():
     menu.additem("ie", 2, "Stability Region of Inverse Euler",  lambda : region(schemes.EulerInverso) )
     menu.additem("ie", 3, "Stability Region of Crank Nicolson", lambda : region(schemes.CrankNicolson))
     menu.additem("ie", 4, "Stability Region of Runge-Kutta 4",  lambda : region(schemes.RungeKutta)   )
-    menu.additem("ie", 5, "Stability Region of Leap-Frog",      lambda : region(LeapFrogModified)     )
+    #menu.additem("ie", 5, "Stability Region of Leap-Frog",      lambda : region(LeapFrogModified)     )
 
     menu.menu()
 
@@ -81,12 +81,11 @@ def oscillator(scheme: Callable):
 def region(scheme: Callable):
     # Default configuration.
     N = 100
-    X = linspace(-20, 20, N)
-    Y = linspace(-20, 20, N)
+    X = linspace(-5, 5, N)
+    Y = linspace(-5, 5, N)
 
     # Calculate the stability region.
-    region = RegionEstabilidad(scheme)
-    region = 1.0 / region
+    region = absolute( RegionEstabilidad(scheme) )
 
     # Plot the stability region.
     CSF = plt.contourf(X, Y, region, levels=[0,1], colors=['#E0E0E0'])
@@ -97,8 +96,8 @@ def region(scheme: Callable):
     plt.xlabel('Re(|r|)')
     plt.ylabel('Im(|r|)')
 
-    plt.xlim([-20, 20])
-    plt.ylim([-20, 20])
+    plt.xlim([-5, 5])
+    plt.ylim([-5, 5])
 
     plt.legend(loc = "lower left")
 

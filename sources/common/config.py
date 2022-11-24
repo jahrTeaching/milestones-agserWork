@@ -46,8 +46,22 @@ class ConfigItem:
             self.efloat()
         elif self.ty == int:
             self.eint()
+        elif self.ty == bool:
+            self.ebool()
         else:
             print(f"[ERROR] Configuration items of type {self.ty} are not supported")
+
+    def ebool(self):
+        msg = f"Enter the new value for {self.name} [Y/N]: "
+
+        string = input(msg)
+
+        if string in ["Y", "y"]:
+            self.val = True
+        elif string in ["N", "n"]:
+            self.val = False
+        else:
+            print(f"[ERROR] Could not parse string '{string}' as boolean (not in ['Y', 'y', 'N', 'n'])")
 
     def efloat(self):
         msg = f"Enter the new value for {self.name} [float]: "

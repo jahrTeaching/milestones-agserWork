@@ -13,9 +13,11 @@ def menu():
     # Build the configuration.
     config = Config()
 
-    config.additem("num",   1, "Number of bodies",                      int)
-    config.additem("steps", 2, "Number of steps",                       int)
-    config.additem("dt",    3, "Time interval between steps",         float)
+    config.additem("num",   1, "Number of bodies",                              int)
+    config.additem("steps", 2, "Number of steps",                               int)
+    config.additem("dt",    3, "Time interval between steps",                 float)
+    config.additem("scale", 4, "Spatial scaling for initial positions",       float)
+    config.additem("com",   5, "Spatial centre coincides with Centre of Mass", bool)
 
     # Build the menu.
     menu = Menu()
