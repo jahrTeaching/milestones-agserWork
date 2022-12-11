@@ -3,6 +3,7 @@
 
 
 from ctypes import c_double
+from common.algebra import Jacobiano, Newton
 from common.color import hue2rgb
 from common.config import Config
 from common.schemes import RungeKutta
@@ -12,8 +13,8 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.collections import PatchCollection
 from multiprocessing import Array, Pool, cpu_count as ncpus
 from multiprocessing.sharedctypes import Array
-from numpy import array, empty, frombuffer, size, reshape, zeros
-from numpy.linalg import norm
+from numpy import array, empty, sqrt, size, reshape, zeros
+from numpy.linalg import eig, norm
 from numpy.typing import ArrayLike
 from random import random
 
@@ -45,6 +46,62 @@ def KeplerForce(U: ArrayLike, t: float):
 
     return array( [dx, dy, -x/d, -y/d] )
 
+
+
+def  CR3BP(U, t, mu=3.0039e-7):
+    # Get the dimensionality.
+    l = int( len(U) / 2 )
+
+    # Get the position and velocity.
+    r = U[:l]
+    d = U[l:]
+
+    # Calculate the velocities.
+    v = [
+        sqrt( ((r[0]     + mu) ** 2) + (r[1]**2) ),
+        sqrt( ((r[0] - 1 + mu) ** 2) + (r[1]**2) ),
+    ]
+
+    # Calculate the forces.
+    f = [
+        (-(1-mu) * (r[0] + mu) / (v[0]**3)) - (mu * (r[0] - 1 + mu) / (v[1]**3)),
+        (-(1-mu) * (r[1]     ) / (v[0]**3)) - (mu * (r[1]         ) / (v[1]**3)),
+    ]
+
+    return array( [
+        d[0],
+        d[1],
+
+        ( 2 * d[1]) + r[0] + f[0],
+        (-2 * d[0]) + r[1] + f[1],
+    ] )
+
+def LagrangePoints(U, NL, mu=3.0039e-7):
+    # Storage for lagrange points.
+    LP = zeros([5,2])
+
+    def F(Y):
+        X = zeros(4)
+        X[:2] = Y
+        X[2:] = 0
+
+        return CR3BP(X, 0, mu)[2:4]
+
+    for i in range(NL):
+        LP[i,:] = Newton(F, U[i,:2])
+
+    return LP
+
+
+def LagrangePointStability(U, mu=3.0039e-7):
+    def F(Y):
+        return CR3BP(Y, 0, mu)
+
+    A = Jacobiano(F, U)
+
+    values, vectors = eig(A)
+
+    return values
 
 
 # N-Body problem solver.
@@ -177,7 +234,7 @@ def NBodyForce(U: ArrayLike, t: ArrayLike):
         for j in range(Nb):
             if i == j:
                 continue
-            
+
             D = r[j, :] - r[i, :]
             dv[i, :] = dv[i, :] + D / norm( D ** 3.0 )
 
